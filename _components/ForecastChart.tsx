@@ -1,48 +1,83 @@
 "use client";
 
-import { LineChart, Line, Legend, YAxis, XAxis, Tooltip, CartesianGrid } from "recharts";
-
-
+import {
+  LineChart,
+  Line,
+  Legend,
+  YAxis,
+  XAxis,
+  Tooltip,
+  CartesianGrid,
+} from "recharts";
 
 const formatXAxisTick = (value: string): string => {
-  return (new Date(value)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return new Date(value).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
 const formatYAxisTick = (value: number): string => {
-  return `${value/1000}K`;
-}
+  const val = `${value / 1000}K`;
 
-const formatTooltipLabel = (values: string)=> {
-  console.log(values)
-  return <p>{(new Date(values)).toLocaleDateString([], { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' })}</p>;
-}
+  return val;
+};
 
-export const ForecastChart= ({data}: {data: {startTime: string, actual: number, forecast: number | null}[]}) => {
+const FormatTooltipLabel = ({ values }: { values: string }) => {
+  return (
+    <span className="text-sm text-muted-foreground">
+      {new Date(values).toLocaleDateString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        day: "2-digit",
+        month: "short",
+      })}
+    </span>
+  );
+};
 
-
-
-    return <LineChart responsive data={data} className="w-full h-full" margin={{
+export const ForecastChart = ({
+  data,
+}: {
+  data: { startTime: string; actual: number; forecast: number | null }[];
+}) => {
+  return (
+    <LineChart
+      responsive
+      data={data}
+      className="w-full h-full"
+      margin={{
         top: 5,
         right: 30,
         left: 20,
-        bottom: 5,
-    }}>
-
+        bottom: 50,
+      }}
+    >
       <CartesianGrid stroke="var(--color-border-3)" />
-      <XAxis tickFormatter={formatXAxisTick} dataKey="startTime" stroke="var(--color-text-3)" />
-      <YAxis tickFormatter={formatYAxisTick} width="auto" stroke="var(--color-text-3)" />
+      <XAxis
+        tickFormatter={formatXAxisTick}
+        dataKey="startTime"
+        stroke="var(--color-text-3)"
+        label={{ value: "Start Time", position: "bottom", offset: 20 }}
+      />
+      <YAxis
+        tickFormatter={(value) => formatYAxisTick(value)}
+        width="auto"
+        stroke="var(--color-text-3)"
+        label={{ value: "Power (kW)", angle: -90, position: "insideLeft" }}
+      />
       <Tooltip
         cursor={{
-          stroke: 'var(--color-border-2)',
+          stroke: "var(--color-border-2)",
         }}
         contentStyle={{
-          backgroundColor: 'var(--color-surface-raised)',
-          borderColor: 'var(--color-border-2)',
+          backgroundColor: "var(--color-surface-raised)",
+          borderColor: "var(--color-border-2)",
         }}
-        labelFormatter={formatTooltipLabel}
+        labelFormatter={(props) => <FormatTooltipLabel values={props} />}
       />
       <Legend />
-      
+
       <Line
         type="monotone"
         dataKey="actual"
@@ -55,6 +90,6 @@ export const ForecastChart= ({data}: {data: {startTime: string, actual: number, 
         stroke="var(--color-chart-2)"
         dot={false}
       />
-        
     </LineChart>
-}
+  );
+};
