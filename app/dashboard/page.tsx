@@ -2,7 +2,7 @@
 import { ForecastChart } from "@/_components/ForecastChart";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
