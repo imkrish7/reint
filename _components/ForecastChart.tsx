@@ -8,13 +8,11 @@ import {
   XAxis,
   Tooltip,
   CartesianGrid,
+  TooltipContentProps,
 } from "recharts";
 
 const formatXAxisTick = (value: string): string => {
-  return new Date(value).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return new Date(value).toUTCString();
 };
 
 const formatYAxisTick = (value: number): string => {
@@ -23,23 +21,35 @@ const formatYAxisTick = (value: number): string => {
   return val;
 };
 
-const FormatTooltipLabel = ({ values }: { values: string }) => {
+const FormatTooltipLabel = ({ payload }: TooltipContentProps) => {
   return (
-    <span className="text-sm text-muted-foreground">
-      {new Date(values).toLocaleDateString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        day: "2-digit",
-        month: "short",
-      })}
-    </span>
+    <div className="flex flex-col bg-gray-200/60 rounded-md p-2 backdrop-blur-2xl">
+      <span className="text-sm text-muted-foreground">
+        StartTime: {new Date(payload?.[0]?.payload?.startTime).toUTCString()}
+      </span>
+      <span className="text-sm text-muted-foreground">
+        PublishTime:{" "}
+        {new Date(payload?.[0]?.payload?.publishTime).toUTCString()}
+      </span>
+      <span className="text-sm text-muted-foreground">
+        Actual: {payload?.[0]?.payload?.actual}
+      </span>
+      <span className="text-sm text-muted-foreground">
+        Forecast: {payload?.[0]?.payload?.forecast}
+      </span>
+    </div>
   );
 };
 
 export const ForecastChart = ({
   data,
 }: {
-  data: { startTime: string; actual: number; forecast: number | null }[];
+  data: {
+    startTime: string;
+    actual: number;
+    forecast: number | null;
+    publishTime: string | null;
+  }[];
 }) => {
   return (
     <LineChart
@@ -49,7 +59,7 @@ export const ForecastChart = ({
       margin={{
         top: 5,
         right: 30,
-        left: 20,
+        left: 0,
         bottom: 50,
       }}
     >
@@ -64,7 +74,7 @@ export const ForecastChart = ({
         tickFormatter={(value) => formatYAxisTick(value)}
         width="auto"
         stroke="var(--color-text-3)"
-        label={{ value: "Power (kW)", angle: -90, position: "insideLeft" }}
+        label={{ value: "Power (MW)", angle: -90, position: "insideLeft" }}
       />
       <Tooltip
         cursor={{
@@ -74,7 +84,7 @@ export const ForecastChart = ({
           backgroundColor: "var(--color-surface-raised)",
           borderColor: "var(--color-border-2)",
         }}
-        labelFormatter={(props) => <FormatTooltipLabel values={props} />}
+        content={FormatTooltipLabel}
       />
       <Legend />
 

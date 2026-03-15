@@ -15,16 +15,14 @@ const formatDate = (date: string) => {
   return `${year}-${month}-${day}`;
 };
 
-export async function getData(
-  startTime: string,
-  endTime: string,
-  forecastHorizon: number,
-) {
+export async function getData(startTime: string, endTime: string) {
   try {
+    const _startTime = formatDate(startTime);
+    const _endTime = formatDate(endTime);
     const params = new URLSearchParams({
       fuelType: "WIND",
-      settlementDateFrom: startTime,
-      settlementDateTo: endTime,
+      settlementDateFrom: _startTime,
+      settlementDateTo: _endTime,
       publishDateFrom: startTime,
       publishDateTo: endTime,
     });
@@ -48,9 +46,11 @@ export async function getData(
 
 export async function forecastData(startTime: string, endTime: string) {
   try {
+    const _startTime = formatDate(startTime);
+    const _endTime = formatDate(endTime);
     const params = new URLSearchParams({
-      publishDateTimeFrom: startTime,
-      publishDateTimeTo: endTime,
+      publishDateTimeFrom: _startTime,
+      publishDateTimeTo: _endTime,
     });
     const response = await fetch(
       `https://data.elexon.co.uk/bmrs/api/v1/datasets/WINDFOR/stream?${params.toString()}`,
@@ -74,10 +74,16 @@ const mergeDataAndForecast = (data: ActualData[], forecast: ForecastData[]) => {
     actual: number;
     forecast: number | null;
     startTime: string;
+    publishTime: string | null;
   }[] = [];
   const mergedData: Record<
     string,
-    { actual: number; forecast: number | null; startTime: string }
+    {
+      actual: number;
+      forecast: number | null;
+      startTime: string;
+      publishTime: string | null;
+    }
   > = {};
 
   for (const item of data) {
@@ -85,16 +91,16 @@ const mergeDataAndForecast = (data: ActualData[], forecast: ForecastData[]) => {
       actual: item.generation,
       forecast: null,
       startTime: item.startTime,
+      publishTime: null,
     };
   }
 
   for (const item of forecast) {
     if (mergedData[item.startTime]) {
       mergedData[item.startTime].forecast = item.generation;
+      mergedData[item.startTime].publishTime = item.publishTime;
     }
   }
-
-  console.log("mergedData", mergedData);
 
   for (const key of Object.keys(mergedData)) {
     if (mergedData[key].forecast !== null) {
@@ -115,11 +121,17 @@ export async function fetchData(
   forecastHorizon: number,
 ) {
   try {
-    const _startTime = formatDate(startTime);
-    const _endTime = formatDate(endTime);
-    const data = await getData(_startTime, _endTime, forecastHorizon);
-    const forecast = await forecastData(_startTime, _endTime);
-    const mergedData = mergeDataAndForecast(data, forecast);
+    const data = await getData(startTime, endTime);
+    const forecast = await forecastData(startTime, endTime);
+    let mergedData = mergeDataAndForecast(data, forecast);
+    mergedData = mergedData.filter(
+      (d) =>
+        d.publishTime &&
+        Math.abs(
+          new Date(d.startTime).getTime() - new Date(d.publishTime).getTime(),
+        ) >=
+          forecastHorizon * 60 * 60 * 1000,
+    );
     return mergedData;
   } catch (error) {
     console.error("Error fetching data:", error);

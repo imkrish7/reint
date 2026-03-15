@@ -3,12 +3,6 @@ import { ForecastChart } from "@/_components/ForecastChart";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import { Field, FieldLabel } from "@/components/ui/field";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import z from "zod";
 import { ForecastDataSchema } from "@/schemas/forecast";
@@ -16,12 +10,18 @@ import { format } from "date-fns";
 import { Slider } from "@/components/ui/slider";
 import { useTransition, useState, useEffect } from "react";
 import { Spinner } from "@/components/ui/spinner";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 const Page = () => {
   const [isPending, startTransition] = useTransition();
   const [data, setData] = useState<
-    { actual: number; forecast: number; startTime: string }[]
+    {
+      actual: number;
+      forecast: number;
+      startTime: string;
+      publishTime: string;
+    }[]
   >([]);
 
   const form = useForm<z.infer<typeof ForecastDataSchema>>({
@@ -48,8 +48,8 @@ const Page = () => {
   };
 
   useEffect(() => {
-    const startTime = new Date(2024, 0, 1);
-    const endTime = new Date(2024, 0, 2);
+    const startTime = new Date(2024, 0, 1, 0, 0, 0);
+    const endTime = new Date(2024, 0, 2, 0, 0, 0);
     const forecastHorizon = 4;
     const values = { startTime, endTime, forecastHorizon };
     fetchData(values);
@@ -69,9 +69,9 @@ const Page = () => {
       <h1 className="text-2xl font-bold mb-4 text-black">
         Wind Power Forecast
       </h1>
-      <div className="w-full h-20 mb-4 p-4 bg-indigo-100 rounded flex items-center">
-        <form onSubmit={form.handleSubmit(fetchData)}>
-          <div className="flex w-full gap-2 justify-center items-center">
+      <div className="w-full sm:h-20 mb-4 p-4 bg-indigo-100 rounded flex sm:items-center sm:flex-row flex-col">
+        <form className="sm:flex-1" onSubmit={form.handleSubmit(fetchData)}>
+          <div className="flex w-full gap-2 justify-center items-center sm:flex-row flex-col">
             <Controller
               name="startTime"
               control={form.control}
@@ -83,34 +83,13 @@ const Page = () => {
                     >
                       Start Time
                     </FieldLabel>
-                    <Popover>
-                      <PopoverTrigger
-                        render={
-                          <Button
-                            variant="outline"
-                            id="date-picker-simple"
-                            className="justify-start font-normal text-gray-600"
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                          </Button>
-                        }
-                      />
-                      <PopoverContent
-                        className="w-auto p-0 text-gray-400"
-                        align="start"
-                      >
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          defaultMonth={new Date(2024, 0, 1)}
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <Input
+                      name="startTime"
+                      type="datetime-local"
+                      value={format(field.value, "yyyy-MM-dd'T'HH:mm:ss")}
+                      onChange={(e) => field.onChange(new Date(e.target.value))}
+                      className="bg-white text-gray-500"
+                    />
                   </Field>
                 );
               }}
@@ -126,31 +105,13 @@ const Page = () => {
                     >
                       End Time
                     </FieldLabel>
-                    <Popover>
-                      <PopoverTrigger
-                        render={
-                          <Button
-                            variant="outline"
-                            id="date-picker-simple"
-                            className="justify-start font-normal  text-gray-600"
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                          </Button>
-                        }
-                      />
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          defaultMonth={new Date(2024, 0, 1)}
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <Input
+                      name="endTime"
+                      type="datetime-local"
+                      value={format(field.value, "yyyy-MM-dd'T'HH:mm:ss")}
+                      onChange={(e) => field.onChange(new Date(e.target.value))}
+                      className="bg-white text-gray-500"
+                    />
                   </Field>
                 );
               }}
@@ -166,7 +127,13 @@ const Page = () => {
                     >
                       Forecast Horizon
                     </FieldLabel>
+
                     <div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm text-gray-700">
+                          {field.value}
+                        </span>
+                      </div>
                       <Slider
                         className={"bg-green-400"}
                         value={field.value}
@@ -180,15 +147,19 @@ const Page = () => {
                 );
               }}
             />
-            <div>
-              <Button type="submit" disabled={isPending}>
+            <div className="w-full sm:w-auto">
+              <Button
+                className={"w-full sm:w-auto"}
+                type="submit"
+                disabled={isPending}
+              >
                 Submit
               </Button>
             </div>
           </div>
         </form>
-        <div>
-          <Button type="button" onClick={handleReset}>
+        <div className="!sm:w-full">
+          <Button className={"w-full"} type="button" onClick={handleReset}>
             Reset
           </Button>
         </div>
@@ -203,7 +174,7 @@ const Page = () => {
             </div>
           )}
       </div>
-      <div className="w-full h-120 p-4 flex items-center justify-center">
+      <div className="w-full h-100 sm:h-120 sm:p-4 flex items-center justify-center">
         {isPending ? (
           <Spinner className="size-20 text-indigo-600/50" />
         ) : (
