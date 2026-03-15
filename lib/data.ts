@@ -28,7 +28,7 @@ export async function getData(startTime: string, endTime: string) {
     });
 
     const response = await fetch(
-      `https://data.elexon.co.uk/bmrs/api/v1/datasets/FUELHH/stream?${params.toString()}`,
+      `${process.env.DATASET_URI}/FUELHH/stream?${params.toString()}`,
       {
         method: "GET",
       },
@@ -53,7 +53,7 @@ export async function forecastData(startTime: string, endTime: string) {
       publishDateTimeTo: _endTime,
     });
     const response = await fetch(
-      `https://data.elexon.co.uk/bmrs/api/v1/datasets/WINDFOR/stream?${params.toString()}`,
+      `${process.env.DATASET_URI}/WINDFOR/stream?${params.toString()}`,
       {
         method: "GET",
       },
