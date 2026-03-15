@@ -14,3 +14,10 @@ export interface ForecastData {
   generation: number;
   dataset: string;
 }
+
+export interface MergedData {
+  actual: number;
+  forecast: number | null;
+  startTime: string;
+  publishTime: string | null;
+}

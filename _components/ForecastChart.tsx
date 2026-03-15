@@ -10,6 +10,7 @@ import {
   CartesianGrid,
   TooltipContentProps,
 } from "recharts";
+import { MergedData } from "@/types/forecast";
 
 const formatXAxisTick = (value: string): string => {
   return new Date(value).toUTCString();
@@ -41,16 +42,7 @@ const FormatTooltipLabel = ({ payload }: TooltipContentProps) => {
   );
 };
 
-export const ForecastChart = ({
-  data,
-}: {
-  data: {
-    startTime: string;
-    actual: number;
-    forecast: number | null;
-    publishTime: string | null;
-  }[];
-}) => {
+export const ForecastChart = ({ data }: { data: MergedData[] }) => {
   return (
     <LineChart
       responsive

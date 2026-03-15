@@ -1,5 +1,5 @@
 "use server";
-import { ActualData, ForecastData } from "@/types/forecast";
+import { ActualData, ForecastData, MergedData } from "@/types/forecast";
 
 const formatDate = (date: string) => {
   const currentDate = new Date(date);
@@ -70,21 +70,8 @@ export async function forecastData(startTime: string, endTime: string) {
 }
 
 const mergeDataAndForecast = (data: ActualData[], forecast: ForecastData[]) => {
-  const finalResult: {
-    actual: number;
-    forecast: number | null;
-    startTime: string;
-    publishTime: string | null;
-  }[] = [];
-  const mergedData: Record<
-    string,
-    {
-      actual: number;
-      forecast: number | null;
-      startTime: string;
-      publishTime: string | null;
-    }
-  > = {};
+  const finalResult: MergedData[] = [];
+  const mergedData: Record<string, MergedData> = {};
 
   for (const item of data) {
     mergedData[item["startTime"]] = {
